@@ -8,4 +8,4 @@
 
 # My Rstudio code is in the text file in root of this github ./RStudio_code.txt go to it and have some fun, i left some comments
 
-# We have a 1000 rows of data so not bad :)
+# We have a 1000 rows of data so not bad :
