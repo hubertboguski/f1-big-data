@@ -1,0 +1,68 @@
+---
+title: "f1-big-data"
+author: "Montaniz Stills, Hubert B.,  6685"
+date: "2023-12-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+qualifying <- read.csv("C:/dev/projects/f1-big-data/qualifying.csv")
+results <- read.csv("C:/dev/projects/f1-big-data/results.csv")
+
+qualifying_df <- as.data.frame(qualifying)
+results_df <- as.data.frame(results)
+
+# Rename "position" to "qualifying_position" because conflicting column position names in races df and quali df
+# This is because the position in quali is different than position in race (race position 1 = win, race position 1 = person who finish first in quali)
+# Same for race
+colnames(qualifying_df)[colnames(qualifying_df) == "position"] ="qualifying_final_position"
+colnames(results_df)[colnames(results_df) == "position"] ="race_final_position"
+
+## Put all data in single dataframe
+merged_df <- merge(qualifying_df, results_df, by.qualifying_df = "raceld", by.results_df = "raceld")
+
+#Since we only care about the effect of whether racers who get into q3 on the results in the race, we drop all rows where racers dont get into q3 (q3 != "\\N")
+filtered_data <- subset(merged_df, q3 != "\\N")
+
+#for your information
+#Each Grand Prix winner tallied 8 points from 1950 to 1960, 9 from 1961 to 1990, 10 between 1991 and 2009, and 25 since 2010.
+#so points might be all over the place, but we just care about if race_final_position = 1, that means they won the race
+# rest of data is there, just does not render
+print("# instead of manually typing col names we can just get the vector of col names from the df with names(df)")
+print('# c("qualifying_final_position","race_final_position","points","driverId","q3","raceId","number","rank","time","fastestLapTime","laps")')
+selected_data <- subset(filtered_data, select = names(selected_data))
+
+print("# Start Rule Discovery")
+selected_data[names(selected_data)] <- lapply(selected_data[names(selected_data)], factor)
+selected_data_tr <- as(selected_data[, sapply(selected_data, is.factor)], "transactions")
+rules <- apriori(data = selected_data_tr, parameter =list(support = 0.01, confidence = 0.05, maxlen = 10, minlen = 3), appearance = list (rhs="race_final_position=1"))
+
+print("# Rule frequency plot")
+inspect(eclat(selected_data_tr, parameter =list(support = 0.01, maxlen = 10, minlen = 3)))
+itemFrequencyPlot(selected_data_tr, topN = 10, type = "absolute", main = "Item frequency")
+
+print("# Remove redundant rules")
+non_redundant_rules <- sort(rules[-which(colSums(is.subset(rules, rules)) > 1)], by = "lift")
+inspect(head(sort(non_redundant_rules, by="confidence"), 5))
+inspect(head(sort(non_redundant_rules, by = "lift"), 5))
+plot(non_redundant_rules, measure = c("support", "lift"), shading = "confidence")
+
+
+print("# Start Kmeans clustering")
+#selected_data <- selected_data(-c(which())) # remove non-numeric rows
+#selected_data <-scale(selected_data)
+#fviz_nbclust(selected_data,FUN=hcut, method="wss", k.max=10)
+#fviz_nbclust(selected_data,FUN=hcut, method="silhouette")
+#fviz_gap_stat(clusGap(selected_data,FUN=hcut,nstart=25,K.max=10,B=50))
+#k1 <- kmeans(selected_data,centers=1,nstart=25)
+#k2 <- kmeans(selected_data,centers=2,nstart=25)
+#k3 <- kmeans(selected_data,centers=3,nstart=25)
+#k4 <- kmeans(selected_data,centers=4,nstart=25)
+#k5 <- kmeans(selected_data,centers=5,nstart=25)
+
+```
