@@ -13,11 +13,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(arulesViz)
 
-qualifying <- read.csv("C:/dev/projects/f1-big-data/qualifying.csv")
-results <- read.csv("C:/dev/projects/f1-big-data/results.csv")
+qualifying <- read.csv("/Users/hubert/Downloads/f1db_csv/qualifying.csv")
+results <- read.csv("/Users/hubert/Downloads/f1db_csv/results.csv")
+constructors <- read.csv("/Users/hubert/Downloads/f1db_csv/constructors.csv")
+drivers <- read.csv("/Users/hubert/Downloads/f1db_csv/drivers.csv")
 
 qualifying_df <- as.data.frame(qualifying)
 results_df <- as.data.frame(results)
+constructors_df <- as.data.frame(constructors)
+drivers_df <- as.data.frame(constructors)
 
 # Rename "position" to "qualifying_position" because conflicting column position names in races df and quali df
 # This is because the position in quali is different than position in race (race position 1 = win, race position 1 = person who finish first in quali)
@@ -26,11 +30,15 @@ colnames(qualifying_df)[colnames(qualifying_df) == "position"] ="qualifying_fina
 colnames(results_df)[colnames(results_df) == "position"] ="race_final_position"
 
 ## Put all data in single dataframe
-merged_df <- merge(qualifying_df, results_df, by.qualifying_df = "raceld", by.results_df = "raceld")
+
+merged_df_car_names <- merge(qualifying_df, constructors_df, by.qualifying_df = "constructorld", by.constructors_df = "constructorld")
+merged_df_nationalities <- merge(merged_df_car_names, drivers_df, by.merged_df_car_names = "driverId", by.drivers_df = "driverId")
+
+merged_df <- merge(merged_df_nationalities, results_df, by.merged_df_nationalities = "raceld", by.results_df = "raceld")
 
 #Since we only care about the effect of whether racers who get into q3 on the results in the race, we drop all rows where racers dont get into q3 (q3 != "\\N")
 
-filtered_data <- filtered_data[which(filtered_data$qualifying_final_position<=10),]
+filtered_data <- merged_df[which(merged_df$qualifying_final_position<=10),]
 
 
 #for your information
@@ -38,8 +46,10 @@ filtered_data <- filtered_data[which(filtered_data$qualifying_final_position<=10
 #so points might be all over the place, but we just care about if race_final_position = 1, that means they won the race
 # rest of data is there, just does not render
 print("# instead of manually typing col names we can just get the vector of col names from the df with names(df)")
-print('# c("qualifying_final_position","race_final_position","points","driverId","q3","raceId","number","rank","time","fastestLapTime","laps")')
+print('# c("qualifying_final_position","race_final_position","points","driverId","q3","raceId","number","rank","time","fastestLapTime","laps","name","nationality")')
 selected_data <- subset(filtered_data, select = names(filtered_data))
+print(names(selected_data))
+#print(selected_data)
 
 print("# Start Rule Discovery")
 selected_data[names(selected_data)] <- lapply(selected_data[names(selected_data)], factor)
