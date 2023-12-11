@@ -39,12 +39,13 @@ filtered_data <- filtered_data[which(filtered_data$qualifying_final_position<=10
 # rest of data is there, just does not render
 print("# instead of manually typing col names we can just get the vector of col names from the df with names(df)")
 print('# c("qualifying_final_position","race_final_position","points","driverId","q3","raceId","number","rank","time","fastestLapTime","laps")')
-selected_data <- subset(filtered_data, select = names(selected_data))
+selected_data <- subset(filtered_data, select = names(filtered_data))
 
 print("# Start Rule Discovery")
 selected_data[names(selected_data)] <- lapply(selected_data[names(selected_data)], factor)
 selected_data_tr <- as(selected_data[, sapply(selected_data, is.factor)], "transactions")
-rules <- apriori(data = selected_data_tr, parameter =list(support = 0.01, confidence = 0.05, maxlen = 10, minlen = 3), appearance = list (rhs="race_final_position=1"))
+# inspect(head(selected_data_tr,2))
+rules <- apriori(data = selected_data_tr, parameter =list(support = 0.005, confidence = 0.05, maxlen = 10, minlen = 3), appearance = list (rhs="race_final_position=1"))
 
 print("# Rule frequency plot")
 #inspect(eclat(selected_data_tr, parameter =list(support = 0.01, maxlen = 10, minlen = 3)))
