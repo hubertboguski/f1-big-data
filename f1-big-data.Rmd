@@ -30,7 +30,7 @@ merged_df <- merge(qualifying_df, results_df, by.qualifying_df = "raceld", by.re
 
 #Since we only care about the effect of whether racers who get into q3 on the results in the race, we drop all rows where racers dont get into q3 (q3 != "\\N")
 
-# filtered_data <- filtered_data[which(filtered_data$qualifying_final_position<=10)]
+filtered_data <- filtered_data[which(filtered_data$qualifying_final_position<=10),]
 
 
 #for your information
