@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
+library(arulesViz)
+
 qualifying <- read.csv("C:/dev/projects/f1-big-data/qualifying.csv")
 results <- read.csv("C:/dev/projects/f1-big-data/results.csv")
 
@@ -27,7 +29,9 @@ colnames(results_df)[colnames(results_df) == "position"] ="race_final_position"
 merged_df <- merge(qualifying_df, results_df, by.qualifying_df = "raceld", by.results_df = "raceld")
 
 #Since we only care about the effect of whether racers who get into q3 on the results in the race, we drop all rows where racers dont get into q3 (q3 != "\\N")
-filtered_data <- subset(merged_df, q3 != "\\N")
+
+# filtered_data <- filtered_data[which(filtered_data$qualifying_final_position<=10)]
+
 
 #for your information
 #Each Grand Prix winner tallied 8 points from 1950 to 1960, 9 from 1961 to 1990, 10 between 1991 and 2009, and 25 since 2010.
@@ -43,8 +47,8 @@ selected_data_tr <- as(selected_data[, sapply(selected_data, is.factor)], "trans
 rules <- apriori(data = selected_data_tr, parameter =list(support = 0.01, confidence = 0.05, maxlen = 10, minlen = 3), appearance = list (rhs="race_final_position=1"))
 
 print("# Rule frequency plot")
-inspect(eclat(selected_data_tr, parameter =list(support = 0.01, maxlen = 10, minlen = 3)))
-itemFrequencyPlot(selected_data_tr, topN = 10, type = "absolute", main = "Item frequency")
+#inspect(eclat(selected_data_tr, parameter =list(support = 0.01, maxlen = 10, minlen = 3)))
+itemFrequencyPlot(selected_data_tr, topN = 20, type = "absolute", main = "Item frequency")
 
 print("# Remove redundant rules")
 non_redundant_rules <- sort(rules[-which(colSums(is.subset(rules, rules)) > 1)], by = "lift")
