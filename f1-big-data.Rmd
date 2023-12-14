@@ -69,15 +69,12 @@ plot(non_redundant_rules, measure = c("support", "lift"), shading = "confidence"
 
 
 print("# Start Kmeans clustering")
-#selected_data <- selected_data(-c(which())) # remove non-numeric rows
-#selected_data <-scale(selected_data)
-#fviz_nbclust(selected_data,FUN=hcut, method="wss", k.max=10)
-#fviz_nbclust(selected_data,FUN=hcut, method="silhouette")
-#fviz_gap_stat(clusGap(selected_data,FUN=hcut,nstart=25,K.max=10,B=50))
-#k1 <- kmeans(selected_data,centers=1,nstart=25)
-#k2 <- kmeans(selected_data,centers=2,nstart=25)
-#k3 <- kmeans(selected_data,centers=3,nstart=25)
-#k4 <- kmeans(selected_data,centers=4,nstart=25)
-#k5 <- kmeans(selected_data,centers=5,nstart=25)
+selected_data_numeric <- selected_data[, sapply(selected_data, is.numeric)]
+scaled_data <- scale(selected_data_numeric)
+scaled_data <- scaled_data[!apply(scaled_data, 2, function(x) any(is.nan(x))), ]
+fviz_nbclust(scaled_data, FUN = hcut, method = "wss", k.max = 10)
+fviz_nbclust(scaled_data, FUN = hcut, method = "silhouette")
+fviz_gap_stat(clusGap(kmeans(scaled_data, centers = 5, nstart = 25), nstart = 25, K.max = 10, B = 50))
+k <- kmeans(scaled_data, centers = 5, nstart = 25)
 
 ```
