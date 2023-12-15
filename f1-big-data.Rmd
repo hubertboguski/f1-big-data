@@ -13,10 +13,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(arulesViz)
 
-qualifying <- read.csv("/Users/hubert/Downloads/f1db_csv/qualifying.csv")
-results <- read.csv("/Users/hubert/Downloads/f1db_csv/results.csv")
-constructors <- read.csv("/Users/hubert/Downloads/f1db_csv/constructors.csv")
-drivers <- read.csv("/Users/hubert/Downloads/f1db_csv/drivers.csv")
+qualifying <- read.csv("C:/dev/projects/f1-big-data/qualifying.csv")
+results <- read.csv("C:/dev/projects/f1-big-data/results.csv")
+constructors <- read.csv("C:/dev/projects/f1-big-data/constructors.csv")
+drivers <- read.csv("C:/dev/projects/f1-big-data/drivers.csv")
 
 qualifying_df <- as.data.frame(qualifying)
 results_df <- as.data.frame(results)
@@ -69,12 +69,27 @@ plot(non_redundant_rules, measure = c("support", "lift"), shading = "confidence"
 
 
 print("# Start Kmeans clustering")
-selected_data_numeric <- selected_data[, sapply(selected_data, is.numeric)]
-scaled_data <- scale(selected_data_numeric)
-scaled_data <- scaled_data[!apply(scaled_data, 2, function(x) any(is.nan(x))), ]
+selected_data <- selected_data[, sapply(selected_data, is.numeric)]
+
+```
+
+
+```{r}
+non_numeric_data <- c("constructorRef","name","nationality","url")
+selected_data <- selected_data[, !colnames(selected_data) %in% non_numeric_data]
+selected_data[selected_data == "\\N"] <- 0
+selected_data <- na.omit(selected_data)
+#str(selected_data)
+scaled_data <- scale(selected_data)
+```
+
+
+```{r}
+#scaled_data <- scaled_data[lapply(scaled_data, 2, function(x) any(is.nan(x))), ]
+library(factoextra)
 fviz_nbclust(scaled_data, FUN = hcut, method = "wss", k.max = 10)
-fviz_nbclust(scaled_data, FUN = hcut, method = "silhouette")
-fviz_gap_stat(clusGap(kmeans(scaled_data, centers = 5, nstart = 25), nstart = 25, K.max = 10, B = 50))
-k <- kmeans(scaled_data, centers = 5, nstart = 25)
+#fviz_nbclust(scaled_data, FUN = hcut, method = "silhouette")
+#fviz_gap_stat(clusGap(kmeans(scaled_data, centers = 5, nstart = 25), nstart = 25, K.max = 10, B = 50))
+#k <- kmeans(scaled_data, centers = 5, nstart = 25)
 
 ```
