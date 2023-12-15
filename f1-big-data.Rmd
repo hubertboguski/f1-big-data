@@ -1,6 +1,6 @@
 ---
 title: "f1-big-data"
-author: "Montaniz Stills, Hubert B.,  6685"
+author: "Montaniz Stills, Hubert Boguski, Farraz Hussain,  6685"
 date: "2023-12-11"
 output: html_document
 ---
@@ -36,10 +36,19 @@ merged_df_nationalities <- merge(merged_df_car_names, drivers_df, by.merged_df_c
 
 merged_df <- merge(merged_df_nationalities, results_df, by.merged_df_nationalities = "raceld", by.results_df = "raceld")
 
+#Some more cleaning on null values, dataset is roughly 2000 rows after these 4 commands
+rows_with__n1 <- which(merged_df$time == "\\N")
+filtered_data2 <- merged_df[-rows_with__n1,]
+rows_with__n <- which(filtered_data2$q3 == "\\N")
+filtered_data1 <- filtered_data2[-rows_with__n,]
+
+
 #Since we only care about the effect of whether racers who get into q3 on the results in the race, we drop all rows where racers dont get into q3 (q3 != "\\N")
+filtered_data <- filtered_data1[which(filtered_data1$qualifying_final_position<=10),]
+#filtered_data2 <- merged_df[which(filtered_data1$race_final_position!="\\N"),]
+#filtered_data <- merged_df[which(filtered_data2$q3!="\\\\N"),]
 
-filtered_data <- merged_df[which(merged_df$qualifying_final_position<=10),]
-
+#print(nrow(filtered_data))
 
 #for your information
 #Each Grand Prix winner tallied 8 points from 1950 to 1960, 9 from 1961 to 1990, 10 between 1991 and 2009, and 25 since 2010.
@@ -57,16 +66,35 @@ selected_data_tr <- as(selected_data[, sapply(selected_data, is.factor)], "trans
 # inspect(head(selected_data_tr,2))
 rules <- apriori(data = selected_data_tr, parameter =list(support = 0.005, confidence = 0.05, maxlen = 10, minlen = 3), appearance = list (rhs="race_final_position=1"))
 
+rules2 <- apriori(data = selected_data_tr, parameter =list(support = 0.005, confidence = 0.05, maxlen = 10, minlen = 3), appearance = list (rhs="race_final_position=2"))
+rules3 <- apriori(data = selected_data_tr, parameter =list(support = 0.005, confidence = 0.05, maxlen = 10, minlen = 3), appearance = list (rhs="race_final_position=3"))
+
+rules4 <- apriori(data = selected_data_tr, parameter =list(support = 0.005, confidence = 0.05, maxlen = 10, minlen = 3), appearance = list (rhs="qualifying_final_position=1"))
+
 print("# Rule frequency plot")
 #inspect(eclat(selected_data_tr, parameter =list(support = 0.01, maxlen = 10, minlen = 3)))
 itemFrequencyPlot(selected_data_tr, topN = 20, type = "absolute", main = "Item frequency")
 
-print("# Remove redundant rules")
+print("# Remove redundant rules and see rules")
 non_redundant_rules <- sort(rules[-which(colSums(is.subset(rules, rules)) > 1)], by = "lift")
-inspect(head(sort(non_redundant_rules, by="confidence"), 5))
-inspect(head(sort(non_redundant_rules, by = "lift"), 5))
+inspect(head(sort(non_redundant_rules, by="confidence"), 10))
+inspect(head(sort(non_redundant_rules, by = "lift"), 10))
 plot(non_redundant_rules, measure = c("support", "lift"), shading = "confidence")
 
+non_redundant_rules <- sort(rules2[-which(colSums(is.subset(rules, rules)) > 1)], by = "lift")
+inspect(head(sort(non_redundant_rules, by="confidence"), 10))
+inspect(head(sort(non_redundant_rules, by = "lift"), 10))
+plot(non_redundant_rules, measure = c("support", "lift"), shading = "confidence")
+
+non_redundant_rules <- sort(rules3[-which(colSums(is.subset(rules, rules)) > 1)], by = "lift")
+inspect(head(sort(non_redundant_rules, by="confidence"), 10))
+inspect(head(sort(non_redundant_rules, by = "lift"), 10))
+plot(non_redundant_rules, measure = c("support", "lift"), shading = "confidence")
+
+non_redundant_rules <- sort(rules4[-which(colSums(is.subset(rules, rules)) > 1)], by = "lift")
+inspect(head(sort(non_redundant_rules, by="confidence"), 10))
+inspect(head(sort(non_redundant_rules, by = "lift"), 10))
+plot(non_redundant_rules, measure = c("support", "lift"), shading = "confidence")
 
 print("# Start Kmeans clustering")
 selected_data <- selected_data[, sapply(selected_data, is.numeric)]
@@ -86,8 +114,8 @@ scaled_data <- scale(selected_data)
 
 ```{r}
 #scaled_data <- scaled_data[lapply(scaled_data, 2, function(x) any(is.nan(x))), ]
-library(factoextra)
-fviz_nbclust(scaled_data, FUN = hcut, method = "wss", k.max = 10)
+#library(factoextra)
+#fviz_nbclust(scaled_data, FUN = hcut, method = "wss", k.max = 10)
 #fviz_nbclust(scaled_data, FUN = hcut, method = "silhouette")
 #fviz_gap_stat(clusGap(kmeans(scaled_data, centers = 5, nstart = 25), nstart = 25, K.max = 10, B = 50))
 #k <- kmeans(scaled_data, centers = 5, nstart = 25)
